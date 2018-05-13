@@ -42,7 +42,6 @@ class Vaporwave(Cog):
             nonlocal loop, data, event, f
             data.seek(0)
             im = Image.open(data)
-            im.convert("BGR;16")
             pcm = im.tobytes()
             if len(pcm) % 2:
                 pcm = b'\0' + pcm
@@ -56,6 +55,8 @@ class Vaporwave(Cog):
             for frame in frames:
                 data += decoder.decode(frame, 960)
             im = Image.frombytes(im.mode, im.size, data[len(data)-opcmlen:])
+            im = im.convert("RGB")
+
             f = io.BytesIO()
             im.save(f, "JPEG")
             f.seek(0)
