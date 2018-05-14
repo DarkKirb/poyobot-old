@@ -12,6 +12,10 @@ __website__ = None
 __version__ = "1.0"
 
 
+with open("data/commonfunc.cl") as f:
+    template = f.read()
+
+
 async def ceil(stack):
     stack.append(math.ceil(stack.pop()))
 
@@ -68,7 +72,6 @@ look = ""
 async def getChar():
     global t, look
     look = t[:1]
-    print(f"Look is at {look}")
     t = t[1:]
 
 
@@ -247,7 +250,7 @@ async def assignment():
     await expression()
     if n not in variables:
         variables.append(n)
-    emitln(PopVar(variables.index(n)))
+    await emitln(PopVar(variables.index(n)))
 
 
 async def function():
@@ -591,7 +594,7 @@ class Say(Cog):
         functions = ofunctions.copy()
         output.clear()
         global t
-        t = code
+        t = template.format(code)
         await init()
 
     @commands.command()
