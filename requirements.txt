@@ -3,7 +3,6 @@ async-timeout==3.0.0
 attrs==18.1.0
 cffi==1.11.5
 chardet==3.0.4
-discord.py==1.0.0a0
 idna==2.6
 idna-ssl==1.0.1
 motor==1.2.1
@@ -17,3 +16,4 @@ six==1.11.0
 websockets==3.4
 yarl==1.1.1
 youtube-dl==2018.5.9
+https://github.com/Rapptz/discord.py/archive/rewrite.zip#egg=discord.py[voice]
