@@ -56,7 +56,7 @@ in {ctx.message.channel.id} ({ctx.message.channel.name})
 owner, please send the attached file to Dark Kirb#8601 or open up an issue \
 on the bot's github page", file=discord.File(
         io.BytesIO(message.encode()),
-        filename=f"error-{date}Z.txt"))
+        filename=f"error-{date}.txt"))
 
 
 
