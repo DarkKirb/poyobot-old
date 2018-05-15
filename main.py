@@ -26,6 +26,8 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, ex):
+    if isinstance(ex, commands.CommandNotFound):
+        pass
     async with ctx.typing():
         date = datetime.datetime.utcnow().isoformat() + "Z"
         s = traceback.format_exception(type(ex), ex, ex.__traceback__)
