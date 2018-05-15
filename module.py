@@ -1,9 +1,10 @@
 from utils import Cog, is_admin, is_mod, NotAdminError, NotModError
 from discord.ext import commands
+
+
 class ModuleCog(Cog):
     def __init__(self, bot):
         super().__init__(bot)
-
 
     @commands.group(invoke_without_command=True)
     async def module(self, ctx):
@@ -13,28 +14,36 @@ Depending on your permissions, some of these commands might be unavailable."""
         await ctx.send("You need to specify a subcommand (load, unload, \
 reload, list, activate, deactivate, info)")
 
+    async def load_mod(self, name):
+        self.bot.load_extension(f"mod.{name}")
 
+    async def unload_mod(self, name):
+        await self.bot.extensions[f"mod.{name}"].cog.on_unload()
+        self.bot.unload_extension(f"mod.{name}")
+
+    async def reload_mod(self, name):
+        await self.unload_mod(name)
+        await self.load_mod(name)
 
     @module.command()
     @commands.is_owner()
     async def load(self, ctx, name: str):
         """Loads a module"""
-        self.bot.load_extension(f"mod.{name}")
+        await self.load_mod(name)
         await ctx.send("👌")
 
     @module.command()
     @commands.is_owner()
     async def unload(self, ctx, name: str):
         """Unloads a module"""
-        self.bot.unload_extension(f"mod.{name}")
+        await self.unload_mod(name)
         await ctx.send("👌")
 
     @module.command()
     @commands.is_owner()
     async def reload(self, ctx, name: str):
         """Reloads a module"""
-        self.bot.unload_extension(f"mod.{name}")
-        self.bot.load_extension(f"mod.{name}")
+        await self.reload_mod(name)
         await ctx.send("👌")
 
     @module.command()
@@ -70,12 +79,16 @@ manage messages")
 
         if global_:
             cog.global_enable = enable
+            await cog.on_disable(None)
         if user:
             cog.overrides[ctx.message.author.id] = enable
+            await cog.on_disable(ctx.message.author)
         if server:
             cog.overrides[ctx.message.guild.id] = enable
+            await cog.on_disable(ctx.message.guild)
         if channel:
             cog.overrides[ctx.message.channel.id] = enable
+            await cog.on_disable(ctx.message.channel)
 
     @module.command()
     async def enable(self, ctx, name: str, type: str):

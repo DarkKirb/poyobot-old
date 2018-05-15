@@ -19,7 +19,13 @@ module.cog = module.ModuleCog(bot)
 
 
 @bot.event
-async def aon_command_error(ctx, ex):
+async def on_ready():
+    for mod in config["autoload"]:
+        await module.cog.load_mod(mod)
+
+
+@bot.event
+async def on_command_error(ctx, ex):
     async with ctx.typing():
         date = datetime.datetime.utcnow().isoformat() + "Z"
         s = traceback.format_exception(type(ex), ex, ex.__traceback__)

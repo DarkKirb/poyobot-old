@@ -48,6 +48,12 @@ class Cog():
     def __global_check_once(self, ctx):
         return self.check_once(ctx)
 
+    async def on_unload(self):
+        pass
+
+    async def on_disable(self, where):
+        pass
+
 
 async def is_admin(guild, member):
     if guild.owner == member:

@@ -247,21 +247,24 @@ class Audio(Cog):
         player.volume = value / 100
         await ctx.send("Set the volume to {:.0%}".format(player.volume))
 
-    @audio.command()
-    async def stop(self, ctx):
-        """Stops playing audio and leaves the voice channel"""
-        server = ctx.message.guild
-        state = self.get_voice_state(server)
-
+    async def stop_handler(self, guild_id):
+        state = self.voice_states.get(guild_id)
+        if state is None:
+            return
         player = state.player
         player.cleanup()
 
         try:
             state.audio_player.cancel()
-            del self.voice_states[server.id]
+            del self.voice_states[guild_id]
             await state.voice.disconnect()
         except Exception as e:
             print(e)
+
+    @audio.command()
+    async def stop(self, ctx):
+        """Stops playing audio and leaves the voice channel"""
+        await self.stop_handler(ctx.message.guild.id)
 
     @audio.command()
     async def skip(self, ctx):
@@ -303,6 +306,17 @@ class Audio(Cog):
 
     def __global_check_once(self, ctx):
         return self.check_once(ctx)
+
+    async def on_unload(self):
+        for guild_id in self.voice_states.copy().keys():
+            await self.stop_handler(guild_id)
+
+    async def on_disable(self, cause):
+        if cause is None:
+            return await self.on_unload()
+        if not isinstance(cause, discord.Guild):
+            return
+        await self.stop_handler(cause.id)
 
 
 def setup(bot):
