@@ -93,7 +93,7 @@ class Autoupdate(Cog):
                 await get_output("pip", "install", "-r", "requirements.txt")
             if fname.startswith("mod/"):
                 # extract module name from it
-                modname = fname.partition("/")[3].rpartition(".")[1]
+                modname = fname.partition("/")[2].rpartition(".")[0]
                 # check if module is loaded
                 if f"mod.{modname}" in self.bot.extensions:
                     # reload the module
