@@ -1,6 +1,7 @@
 """This module gives out roles depending on reactions on a message"""
 from utils import Cog, is_mod, command
 from discord.ext import commands
+import database
 
 
 __author__ = "Dark Kirb"
@@ -9,10 +10,20 @@ __website__ = None
 __version__ = "1.0"
 
 
+table = database.db.reaction_role
+
+
 class ReactionRole(Cog):
     def __init__(self, bot):
         super().__init__(bot)
         self.reaction_role_msgs = {}
+
+    async def init(self):
+        await super().init()
+        async for document in table.find({}):
+            key = document["message"]
+            value = document["reactions"]
+            self.reaction_role_msgs[key] = value
 
     @command()
     async def add_reaction_role(self, ctx, *, message: str):
@@ -73,6 +84,8 @@ stop"))
 
         for message in to_delete:
             await message.delete()
+
+        await table.insert_one({"message": msg.id, "reactions": emoji_role})
 
         self.reaction_role_msgs[msg.id] = emoji_role
 
