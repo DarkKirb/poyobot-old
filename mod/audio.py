@@ -62,6 +62,8 @@ class VoiceState:
 
     @property
     def player(self):
+        if self.current is None:
+            return None
         return self.current.player
 
     def skip(self):
