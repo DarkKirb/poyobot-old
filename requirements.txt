@@ -17,3 +17,4 @@ websockets==3.4
 yarl==1.1.1
 youtube-dl==2018.5.9
 https://github.com/Rapptz/discord.py/archive/rewrite.zip#egg=discord.py[voice]
+aiofiles==0.3.2
