@@ -1,6 +1,7 @@
 """This module gives out roles depending on reactions on a message"""
 from utils import Cog, is_mod, command
 from discord.ext import commands
+from discord.utils import find
 import database
 
 
@@ -76,7 +77,11 @@ send the name of the role you want it to give out. React with ❌ to stop"))
  with the same or higher rank as you!"))
                     continue
 
-                emoji_role[reaction.emoji] = found_role
+                if not isinstance(reaction.emoji, str):
+                    emoji = reaction.emoji.id
+                else:
+                    emoji = reaction.emoji
+                emoji_role[emoji] = found_role.id
                 break
             to_delete.append(await ctx.send("React to the last message and \
 then send the name of the role you want it to give out. React with ❌ to \
@@ -93,22 +98,28 @@ stop"))
         if reaction.message.id not in self.reaction_role_msgs:
             return
 
-        if reaction.emoji not in self.reaction_role_msgs[reaction.message.id]:
+        emoji = reaction.emoji
+        if not isinstance(emoji, str):
+            emoji = emoji.id
+        if emoji not in self.reaction_role_msgs[reaction.message.id]:
             return
-
+        role_id = self.reaction_role_msgs[reaction.message.id][emoji]
         await user.add_roles(
-            self.reaction_role_msgs[reaction.message.id][reaction.emoji]
+            find(lambda x: x.id == role_id, reaction.message.guild.roles)
         )
 
     async def on_reaction_remove(self, reaction, user):
         if reaction.message.id not in self.reaction_role_msgs:
             return
 
-        if reaction.emoji not in self.reaction_role_msgs[reaction.message.id]:
+        emoji = reaction.emoji
+        if not isinstance(emoji, str):
+            emoji = emoji.id
+        if emoji not in self.reaction_role_msgs[reaction.message.id]:
             return
-
+        role_id = self.reaction_role_msgs[reaction.message.id][emoji]
         await user.remove_roles(
-            self.reaction_role_msgs[reaction.message.id][reaction.emoji]
+            find(lambda x: x.id == role_id, reaction.message.guild.roles)
         )
 
 
