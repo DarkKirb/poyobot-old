@@ -33,7 +33,8 @@ async def get_output(*args):
 
 
 class Autoupdate(Cog):
-    def __init__(self):
+    def __init__(self, bot):
+        super().__init__(bot)
         self.dont_update = False
         asyncio.ensure_future(self.update())
 
