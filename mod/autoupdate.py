@@ -3,6 +3,7 @@ there is a new commit on upstream. It has no commands."""
 from utils import Cog
 import module
 import discord
+from discord.ext import commands
 import subprocess
 import asyncio
 import shlex
@@ -37,6 +38,12 @@ class Autoupdate(Cog):
         super().__init__(bot)
         self.dont_update = False
         asyncio.ensure_future(self.update())
+
+    @commands.command()
+    @commands.is_owner()
+    async def update(self, ctx):
+        await self._update()
+        await ctx.send("👌")
 
     def check_for_update(self):
         if not self.dont_update:
