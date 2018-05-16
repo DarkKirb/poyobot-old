@@ -37,7 +37,7 @@ class Autoupdate(Cog):
     def __init__(self, bot):
         super().__init__(bot)
         self.dont_update = False
-        asyncio.ensure_future(self.update())
+        asyncio.ensure_future(self.do_update())
 
     @commands.command()
     @commands.is_owner()
@@ -47,9 +47,9 @@ class Autoupdate(Cog):
 
     def check_for_update(self):
         if not self.dont_update:
-            asyncio.ensure_future(self.update())
+            asyncio.ensure_future(self.do_update())
 
-    async def update(self):
+    async def do_update(self):
         await self._update()
         asyncio.get_event_loop().call_later(300, self.check_for_update)
 
