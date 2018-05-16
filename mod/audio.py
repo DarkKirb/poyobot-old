@@ -1,5 +1,5 @@
 """This module is for playing music in the vc"""
-from utils import Cog
+from utils import Cog, group
 from discord.ext import commands
 import asyncio
 import discord
@@ -157,7 +157,7 @@ class Audio(Cog):
         else:
             await ctx.send("Ready to play audio in " + channel.name)
 
-    @commands.group(invoke_without_subcommand=True)
+    @group(invoke_without_subcommand=True)
     async def audio(self, ctx):
         """Audio commands"""
         pass
@@ -305,9 +305,6 @@ class Audio(Cog):
     async def playing(self, ctx):
         """Displays what song is currently playing"""
         await self.playing_handler(ctx)
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
     async def on_unload(self):
         for guild_id in self.voice_states.copy().keys():

@@ -1,6 +1,6 @@
 """This module is responsible for automatically updating the bot every time
 there is a new commit on upstream. It has no commands."""
-from utils import Cog
+from utils import Cog, command
 import module
 import discord
 from discord.ext import commands
@@ -39,7 +39,7 @@ class Autoupdate(Cog):
         self.dont_update = False
         asyncio.ensure_future(self.do_update())
 
-    @commands.command()
+    @command()
     @commands.is_owner()
     async def update(self, ctx):
         await self._update()
@@ -109,9 +109,6 @@ class Autoupdate(Cog):
 
     async def on_unload(self):
         self.dont_update = True
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
 
 def setup(bot):

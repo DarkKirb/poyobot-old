@@ -1,6 +1,6 @@
 """This module is for creating images that look like vaporwave"""
 import discord
-from utils import Cog
+from utils import Cog, command
 from discord.ext import commands
 import asyncio
 from PIL import Image
@@ -17,7 +17,7 @@ __version__ = "1.0"
 
 
 class Vaporwave(Cog):
-    @commands.command()
+    @command()
     async def mp3ify(self, ctx, fname: str = None):
         if fname is None:
             if len(ctx.message.attachments) == 0:
@@ -66,9 +66,6 @@ class Vaporwave(Cog):
         await event.wait()
         t.join()
         await ctx.send("", file=discord.File(f, filename="mp3.jpg"))
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
 
 def setup(bot):

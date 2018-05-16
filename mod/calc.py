@@ -1,5 +1,5 @@
 """This module implements a small programming language and virtual machine"""
-from utils import Cog
+from utils import Cog, command
 import discord
 from discord.ext import commands
 import math
@@ -597,7 +597,7 @@ class Say(Cog):
         t = template.format(code)
         await init()
 
-    @commands.command()
+    @command()
     async def compile(self, ctx, *, code: str):
         await self.compile_code(code)
         paginator = commands.Paginator()
@@ -606,7 +606,7 @@ class Say(Cog):
         for page in paginator.pages:
             await ctx.send(page)
 
-    @commands.command()
+    @command()
     async def eval(self, ctx, *, code: str):
         await self.compile_code(code)
         global stack, current_vars, frames, callstack, pc
@@ -626,10 +626,6 @@ class Say(Cog):
             pc += 1
             icount += 1
         await ctx.send(stack.pop())
-
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
 
 def setup(bot):

@@ -1,5 +1,5 @@
 """This module gives out roles depending on reactions on a message"""
-from utils import Cog, is_mod
+from utils import Cog, is_mod, command
 from discord.ext import commands
 
 
@@ -14,7 +14,7 @@ class ReactionRole(Cog):
         super().__init__(bot)
         self.reaction_role_msgs = {}
 
-    @commands.command()
+    @command()
     async def add_reaction_role(self, ctx, *, message: str):
         if not await is_mod(ctx.message.guild, ctx.message.author,
                             ctx.message.channel):
@@ -97,9 +97,6 @@ stop"))
         await user.remove_roles(
             self.reaction_role_msgs[reaction.message.id][reaction.emoji]
         )
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
 
 def setup(bot):

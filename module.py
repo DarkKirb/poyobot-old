@@ -1,12 +1,13 @@
-from utils import Cog, is_admin, is_mod, NotAdminError, NotModError
+from utils import Cog, is_admin, is_mod, NotAdminError, NotModError, group
 from discord.ext import commands
+import database
 
 
 class ModuleCog(Cog):
     def __init__(self, bot):
         super().__init__(bot)
 
-    @commands.group(invoke_without_command=True)
+    @group(invoke_without_command=True)
     async def module(self, ctx):
         """Module command
 
@@ -60,6 +61,23 @@ reload, list, activate, deactivate, info)")
         if data != "```":
             await ctx.send(data + "```")
 
+    async def set_overwrite(self, module, who, enabled):
+        if who.id in module.overrides:
+            document = await database.db.enable.find_one(
+                {"name": module._module.__name__,
+                 "id": who.id})
+        else:
+            document = {"name": module._module.__name__, "id": who.id}
+
+        document["enabled"] = enabled
+        if who.id in module.overrides:
+            await database.db.enable.replace_one({'_id': document['_id']},
+                                                 document)
+        else:
+            await database.db.enable.insert_one(document)
+        module.overrides[who.id] = enabled
+
+
     async def set_perm(self, ctx, name: str, global_: bool, user: bool,
                        server: bool, channel: bool, enable: bool):
         mod = self.bot.extensions[f"mod.{name}"]
@@ -78,17 +96,29 @@ that: be owner, admin, manage guild, kick and ban members, manage channels, \
 manage messages")
 
         if global_:
+            global_enable_tbl = database.db.global_enable
+            global_enable = await global_enable_tbl.find_one(
+                {
+                    "name": cog._module.__name__
+                }
+            )
+            global_enable["enabled"] = enable
+            await global_enable_tbl.replace_one({"_id": global_enable["_id"]},
+                                                global_enable)
             cog.global_enable = enable
             await cog.on_disable(None)
         if user:
-            cog.overrides[ctx.message.author.id] = enable
-            await cog.on_disable(ctx.message.author)
+            await self.set_overwrite(cog, ctx.message.author, enable)
+            if not enable:
+                await cog.on_disable(ctx.message.author)
         if server:
-            cog.overrides[ctx.message.guild.id] = enable
-            await cog.on_disable(ctx.message.guild)
+            await self.set_overwrite(cog, ctx.message.guild, enable)
+            if not enable:
+                await cog.on_disable(ctx.message.guild)
         if channel:
-            cog.overrides[ctx.message.channel.id] = enable
-            await cog.on_disable(ctx.message.channel)
+            await self.set_overwrite(cog, ctx.message.channel, enable)
+            if not enable:
+                await cog.on_disable(ctx.message.channel)
 
     @module.command()
     async def enable(self, ctx, name: str, type: str):

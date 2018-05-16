@@ -1,6 +1,6 @@
 """This module is an example module that is a base skeleton for many other
 modules. It has a single command that simply says its arguments"""
-from utils import Cog
+from utils import Cog, command
 from discord.ext import commands
 
 
@@ -11,13 +11,10 @@ __version__ = "1.0"
 
 
 class Say(Cog):
-    @commands.command()
+    @command()
     async def say(self, ctx, *, msg: str):
         """Output the arguments as a message"""
         await ctx.send(msg)
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
 
 def setup(bot):

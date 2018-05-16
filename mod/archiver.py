@@ -1,6 +1,6 @@
 """This is a module that archives channel contents and uploads them as one/
 multiple tar.xz files"""
-from utils import Cog, is_mod
+from utils import Cog, is_mod, command
 from discord.ext import commands
 import discord
 import tempfile
@@ -18,7 +18,7 @@ __version__ = "1.0"
 
 
 class Archiver(Cog):
-    @commands.command()
+    @command()
     async def archiver(self, ctx):
         """Archives the current channel (but doesn't delete it)"""
         if not await is_mod(ctx.message.guild, ctx.message.author,
@@ -106,9 +106,6 @@ class Archiver(Cog):
                 tf.add(fname)
             tf.close()
             await ctx.send("done", file=discord.File(tfn))
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
 
 def setup(bot):

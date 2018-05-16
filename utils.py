@@ -1,5 +1,7 @@
 from discord.ext import commands
 import importlib
+import database
+import asyncio
 
 
 class SubcommandError(commands.CommandError):
@@ -14,6 +16,40 @@ class NotModError(commands.CheckFailure):
     pass
 
 
+def get_module(name):
+    return importlib.import_module(name)
+
+
+def command(*args, **kwargs):
+    def wrapper(f):
+        def check(ctx):
+            return get_module(f.__module__).cog.check_once(ctx)
+        if "checks" in kwargs:
+            checks = kwargs.pop("checks").copy()
+            checks.append(check)
+        else:
+            checks = [check]
+        cmd = commands.command(*args, **kwargs)(f)
+        cmd.checks += checks
+        return cmd
+    return wrapper
+
+
+def group(*args, **kwargs):
+    def wrapper(f):
+        def check(ctx):
+            return get_module(f.__module__).cog.check_once(ctx)
+        if "checks" in kwargs:
+            checks = kwargs.pop("checks").copy()
+            checks.append(check)
+        else:
+            checks = [check]
+        grp = commands.group(*args, **kwargs)(f)
+        grp.checks += checks
+        return grp
+    return wrapper
+
+
 class Cog():
     def __init__(self, bot):
         self.bot = bot
@@ -21,15 +57,40 @@ class Cog():
         self.global_enable = True
         self.overrides = {}
         bot.add_cog(self)
+        asyncio.ensure_future(self.init())
+
+    async def init(self):
+        # fetch stuff like global enables and overrides from the database
+        print(f"initing {self._module.__name__}")
+        global_enable_tbl = database.db.global_enable
+        global_enable = await global_enable_tbl.find_one(
+            {
+                "name": self._module.__name__
+            }
+        )
+        if global_enable is None:
+            global_enable_tbl.insert_one({"name": self._module.__name__,
+                                          "enabled": True})
+        else:
+            self.global_enable = global_enable["enabled"]
+        print(f"{self._module.__name__} global: {self.global_enable}")
+
+        async for document in database.db.enable.find(
+                {"name": self._module.__name__}):
+            self.overrides[document["id"]] = document["enabled"]
+            print(f"{self._module.__name__} {document['id']}: {document['enabled']}")
+        print("initing done")
 
     def check_once(self, ctx):
         mod = self._module
         name = mod.__name__
         if name == "module":
+            print(f"{name}: True")
             return True  # This module can't be deactivated ever
 
         if ctx.message.author.id in self.overrides:
             if not self.overrides[ctx.message.author.id]:
+                print(f"{name}: False")
                 return False
 
         enabled = self.global_enable
@@ -43,10 +104,8 @@ class Cog():
             if role.id in self.overrides:
                 enabled = self.overrides[role.id]
 
+        print(f"{name}: {enabled}")
         return enabled
-
-    def __global_check_once(self, ctx):
-        return self.check_once(ctx)
 
     async def on_unload(self):
         pass
