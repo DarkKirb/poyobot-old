@@ -78,7 +78,7 @@ send the name of the role you want it to give out. React with ❌ to stop"))
                     continue
 
                 if not isinstance(reaction.emoji, str):
-                    emoji = reaction.emoji.id
+                    emoji = str(reaction.emoji.id)
                 else:
                     emoji = reaction.emoji
                 emoji_role[emoji] = found_role.id
@@ -100,7 +100,7 @@ stop"))
 
         emoji = reaction.emoji
         if not isinstance(emoji, str):
-            emoji = emoji.id
+            emoji = str(emoji.id)
         if emoji not in self.reaction_role_msgs[reaction.message.id]:
             return
         role_id = self.reaction_role_msgs[reaction.message.id][emoji]
@@ -114,7 +114,7 @@ stop"))
 
         emoji = reaction.emoji
         if not isinstance(emoji, str):
-            emoji = emoji.id
+            emoji = str(emoji.id)
         if emoji not in self.reaction_role_msgs[reaction.message.id]:
             return
         role_id = self.reaction_role_msgs[reaction.message.id][emoji]
