@@ -28,8 +28,8 @@ async def get_output(*args):
     process = await launch_process(*args)
     data = (await process.communicate())[0]
     if isinstance(data, bytes):
-        return data.decode("UTF-8").trim()
-    return data.trim()
+        return data.decode("UTF-8").strip()
+    return data.strip()
 
 
 class Autoupdate(Cog):
