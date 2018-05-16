@@ -32,6 +32,12 @@ async def on_command_error(ctx, ex):
         except:
             pass
         return
+    elif isinstance(ex, commands.MissingRequiredArgument):
+        try:
+            await ctx.send(str(ex))
+        except:
+            pass
+        return
     async with ctx.typing():
         date = datetime.datetime.utcnow().isoformat() + "Z"
         s = traceback.format_exception(type(ex), ex, ex.__traceback__)
