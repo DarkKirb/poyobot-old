@@ -100,7 +100,7 @@ class Autoupdate(Cog):
                     await module.cog.reload_mod(modname)
             if fname in ["main.py", "module.py", "database.py", "utils.py"]:
                 # we can't reload the modules
-                await self.bot.logoff()
+                await self.bot.logout()
                 sys.exit(0)
 
         # bot was updated
