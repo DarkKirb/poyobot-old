@@ -54,6 +54,8 @@ class Autoupdate(Cog):
         asyncio.get_event_loop().call_later(300, self.check_for_update)
 
     async def _update(self):
+        # 0) fetch latest commit
+        local_commit = await get_output("git", "fetch", "origin")
         # 1) get the current local commit
         local_commit = await get_output("git", "rev-parse", "@")
         remote_commit = await get_output("git", "rev-parse", "origin/master")
