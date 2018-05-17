@@ -36,6 +36,7 @@ class ReactionRole(Cog):
         if doc is None:
             return False
         self.reaction_role_msgs[msg.id] = doc["reactions"]
+        return True
 
     @command()
     async def add_reaction_role(self, ctx, *, message: str):
