@@ -20,13 +20,6 @@ class ReactionRole(Cog):
         super().__init__(bot)
         self.reaction_role_msgs = {}
 
-    async def init(self):
-        await super().init()
-        async for document in table.find({}):
-            key = document["message"]
-            value = document["reactions"]
-            self.reaction_role_msgs[key] = value
-
     @alru_cache()
     async def is_reaction_role_msg(self, msg):
         if msg.id in self.reaction_role_msgs:
