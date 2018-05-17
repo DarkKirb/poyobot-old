@@ -21,14 +21,16 @@ class ReactionRole(Cog):
         self.reaction_role_msgs = {}
 
     @alru_cache()
-    async def is_reaction_role_msg(self, msg):
-        if msg.id in self.reaction_role_msgs:
+    async def is_reaction_role_msg(self, msg_id):
+        if msg_id in self.reaction_role_msgs:
             return True
         # fetch the document from the db
-        doc = await table.find_one({"message": msg.id})
+        doc = await table.find_one({"message": msg_id})
         if doc is None:
+            print("False")
             return False
-        self.reaction_role_msgs[msg.id] = doc["reactions"]
+        self.reaction_role_msgs[msg_id] = doc["reactions"]
+        print("True")
         return True
 
     @command()
@@ -99,32 +101,44 @@ stop"))
 
         self.reaction_role_msgs[msg.id] = emoji_role
 
-    async def on_reaction_add(self, reaction, user):
-        if not await self.is_reaction_role_msg(reaction.message):
+    async def on_raw_reaction_add(self, reaction):
+        if not await self.is_reaction_role_msg(reaction.message_id):
             return
-
         emoji = reaction.emoji
+        if emoji.id is None:
+            emoji = emoji.name
+        else:
+            emoji = str(emoji.id)
+
         if not isinstance(emoji, str):
             emoji = str(emoji.id)
-        if emoji not in self.reaction_role_msgs[reaction.message.id]:
+        if emoji not in self.reaction_role_msgs[reaction.message_id]:
             return
-        role_id = self.reaction_role_msgs[reaction.message.id][emoji]
+        role_id = self.reaction_role_msgs[reaction.message_id][emoji]
+        guild = find(lambda x: x.id == reaction.guild_id, self.bot.guilds)
+        user = find(lambda x: x.id == reaction.user_id, guild.members)
         await user.add_roles(
-            find(lambda x: x.id == role_id, reaction.message.guild.roles)
+            find(lambda x: x.id == role_id, guild.roles)
         )
 
-    async def on_reaction_remove(self, reaction, user):
-        if not await self.is_reaction_role_msg(reaction.message):
+    async def on_raw_reaction_remove(self, reaction):
+        if not await self.is_reaction_role_msg(reaction.message_id):
             return
-
         emoji = reaction.emoji
+        if emoji.id is None:
+            emoji = emoji.name
+        else:
+            emoji = str(emoji.id)
+
         if not isinstance(emoji, str):
             emoji = str(emoji.id)
-        if emoji not in self.reaction_role_msgs[reaction.message.id]:
+        if emoji not in self.reaction_role_msgs[reaction.message_id]:
             return
-        role_id = self.reaction_role_msgs[reaction.message.id][emoji]
+        role_id = self.reaction_role_msgs[reaction.message_id][emoji]
+        guild = find(lambda x: x.id == reaction.guild_id, self.bot.guilds)
+        user = find(lambda x: x.id == reaction.user_id, guild.members)
         await user.remove_roles(
-            find(lambda x: x.id == role_id, reaction.message.guild.roles)
+            find(lambda x: x.id == role_id, guild.roles)
         )
 
 
