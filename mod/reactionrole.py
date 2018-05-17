@@ -3,6 +3,7 @@ from utils import Cog, is_mod, command
 from discord.ext import commands
 from discord.utils import find
 import database
+from async_lru import alru_cache
 
 
 __author__ = "Dark Kirb"
@@ -25,6 +26,16 @@ class ReactionRole(Cog):
             key = document["message"]
             value = document["reactions"]
             self.reaction_role_msgs[key] = value
+
+    @alru_cache()
+    async def is_reaction_role_msg(self, msg):
+        if msg in self.reaction_role_msgs:
+            return True
+        # fetch the document from the db
+        doc = table.find_one({"message": msg.id})
+        if doc is None:
+            return False
+        self.reaction_role_msgs[msg.id] = doc["reactions"]
 
     @command()
     async def add_reaction_role(self, ctx, *, message: str):
@@ -95,7 +106,7 @@ stop"))
         self.reaction_role_msgs[msg.id] = emoji_role
 
     async def on_reaction_add(self, reaction, user):
-        if reaction.message.id not in self.reaction_role_msgs:
+        if not await self.is_reaction_role_msg(reaction.message):
             return
 
         emoji = reaction.emoji
@@ -109,7 +120,7 @@ stop"))
         )
 
     async def on_reaction_remove(self, reaction, user):
-        if reaction.message.id not in self.reaction_role_msgs:
+        if not await self.is_reaction_role_msg(reaction.message):
             return
 
         emoji = reaction.emoji
