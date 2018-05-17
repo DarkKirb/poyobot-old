@@ -52,10 +52,12 @@ def group(*args, **kwargs):
 
 
 class Cog():
+    auto_enable = True
+
     def __init__(self, bot):
         self.bot = bot
         self._module = importlib.import_module(self.__class__.__module__)
-        self.global_enable = True
+        self.global_enable = self.auto_enable
         self.overrides = {}
         self.no_overrides = []
         bot.add_cog(self)
@@ -71,7 +73,7 @@ class Cog():
         )
         if global_enable is None:
             global_enable_tbl.insert_one({"name": self._module.__name__,
-                                          "enabled": True})
+                                          "enabled": self.auto_enable})
         else:
             self.global_enable = global_enable["enabled"]
 
