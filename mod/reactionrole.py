@@ -29,10 +29,10 @@ class ReactionRole(Cog):
 
     @alru_cache()
     async def is_reaction_role_msg(self, msg):
-        if msg in self.reaction_role_msgs:
+        if msg.id in self.reaction_role_msgs:
             return True
         # fetch the document from the db
-        doc = table.find_one({"message": msg.id})
+        doc = await table.find_one({"message": msg.id})
         if doc is None:
             return False
         self.reaction_role_msgs[msg.id] = doc["reactions"]
