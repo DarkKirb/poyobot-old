@@ -9,9 +9,11 @@ import youtube_dl
 import functools
 
 
-__author__ = "Dark Kirb"
+__author__ = "Rapptz, Dark Kirb"
 __license__ = "BSD-2clause"
-__website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/audio.py"
+__website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/audio.py, \
+based on https://github.com/Rapptz/discord.py/blob/async/examples/playlist.py \
+and https://github.com/Rapptz/discord.py/blob/async/discord/voice_client.py"
 __version__ = "1.0"
 
 
