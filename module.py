@@ -62,6 +62,8 @@ reload, list, activate, deactivate, info)")
             await ctx.send(data + "```")
 
     async def set_overwrite(self, module, who, enabled):
+        if who.id in module.no_overrides:
+            del module.no_overrides[module.no_overrides.index(who.id)]
         if who.id in module.overrides:
             document = await database.db.enable.find_one(
                 {"name": module._module.__name__,

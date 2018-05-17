@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 import importlib
 import database
 import asyncio
@@ -56,12 +57,12 @@ class Cog():
         self._module = importlib.import_module(self.__class__.__module__)
         self.global_enable = True
         self.overrides = {}
+        self.no_overrides = []
         bot.add_cog(self)
         asyncio.ensure_future(self.init())
 
     async def init(self):
         # fetch stuff like global enables and overrides from the database
-        print(f"initing {self._module.__name__}")
         global_enable_tbl = database.db.global_enable
         global_enable = await global_enable_tbl.find_one(
             {
@@ -73,13 +74,22 @@ class Cog():
                                           "enabled": True})
         else:
             self.global_enable = global_enable["enabled"]
-        print(f"{self._module.__name__} global: {self.global_enable}")
 
-        async for document in database.db.enable.find(
-                {"name": self._module.__name__}):
-            self.overrides[document["id"]] = document["enabled"]
-            print(f"{self._module.__name__} {document['id']}: {document['enabled']}")
-        print("initing done")
+    async def on_id(self, obj):  # this code is called for every ID encountered
+        if not isinstance(obj, (discord.User, discord.Member, discord.Guild,
+                                discord.TextChannel)):
+            return
+        if obj.id in self.overrides:
+            return
+        if obj.id in self.no_overrides:
+            return
+        doc = await database.db.enable.find_one({"name": self._module.__name__,
+                                                 "id": obj.id})
+        if doc is None:
+            self.no_overrides.append(obj.id)
+        else:
+            print(f"Doc for {obj} found: {doc}")
+            self.overrides[obj.id] = doc["enabled"]
 
     def check_once(self, ctx):
         mod = self._module

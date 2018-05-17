@@ -38,6 +38,8 @@ async def on_command_error(ctx, ex):
         except:
             pass
         return
+    elif isinstance(ex, commands.CheckFailure):
+        return
     async with ctx.typing():
         date = datetime.datetime.utcnow().isoformat() + "Z"
         s = traceback.format_exception(type(ex), ex, ex.__traceback__)
@@ -71,6 +73,15 @@ on the bot's github page", file=discord.File(
         filename=f"error-{date}.txt"))
 
 
+@bot.event
+async def on_message(message):
+    for name, module in bot.extensions.items():
+        cog = module.cog
+        await cog.on_id(message)
+        await cog.on_id(message.author)
+        await cog.on_id(message.guild)
+        await cog.on_id(message.channel)
+    await bot.process_commands(message)
 
 if __name__ == "__main__":
     bot.run(config["token"], bot=True)
