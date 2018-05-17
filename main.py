@@ -83,5 +83,20 @@ async def on_message(message):
         await cog.on_id(message.channel)
     await bot.process_commands(message)
 
+
+@bot.command()
+@commands.is_owner()
+async def pyeval(ctx, *, code: str):
+    exec(f"""
+import asyncio
+import discord
+
+async def code():
+    {code}
+
+asyncio.ensure_future(code())
+""", {"ctx":ctx})
+
+
 if __name__ == "__main__":
     bot.run(config["token"], bot=True)
