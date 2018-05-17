@@ -6,7 +6,7 @@ from discord.ext import commands
 
 __author__ = "Dark Kirb"
 __license__ = "Public domain"
-__website__ = None
+__website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/say.py"
 __version__ = "1.0"
 
 

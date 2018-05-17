@@ -8,7 +8,7 @@ import cmath
 
 __author__ = "Dark Kirb"
 __license__ = "BSD-2clause"
-__website__ = None
+__website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/calc.py"
 __version__ = "1.0"
 
 
