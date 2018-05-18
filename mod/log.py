@@ -175,7 +175,7 @@ class Log(Cog):
             e.add_field(name="Before", value=before.nick)
             e.add_field(name="After", value=after.nick)
             await channel.send(embed=e)
-        if ((before.name != after.username) or (before.discriminator !=
+        if ((before.name != after.name) or (before.discriminator !=
                 after.discriminator)) and await self.can_monitor_event(
                 before.guild.id, "rename"):
             channel = await self.get_event_channel(before.guild.id, "rename")
