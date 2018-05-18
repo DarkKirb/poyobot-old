@@ -29,7 +29,7 @@ reload, list, activate, deactivate, info)")
         cog = self.bot.extensions[f"mod.{name}"].cog
         mods = []
         for dependent in cog.dependents:
-            mods.append(list(reversed(await self.unload_mod(dependent))))
+            mods += list(reversed(await self.unload_mod(dependent)))
         self.bot.unload_extension(f"mod.{name}")
         mods.append(name)
         return list(reversed(mods))
