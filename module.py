@@ -20,7 +20,7 @@ reload, list, activate, deactivate, info)")
         cog = self.bot.extensions[f"mod.{name}"].cog
         for dependency in cog.dependencies:
             if f"mod.{dependency}" not in self.bot.extensions:
-                await self.load_mod(self, dependency)
+                await self.load_mod(dependency)
             dep_cog = self.bot.extensions[f"mod.{dependency}"].cog
             dep_cog.dependents.append(name)
 
@@ -28,8 +28,8 @@ reload, list, activate, deactivate, info)")
         await self.bot.extensions[f"mod.{name}"].cog.on_unload()
         cog = self.bot.extensions[f"mod.{name}"].cog
         mods = []
-        for dependant in cog.dependants:
-            mods.append(list(reversed(await self.unload_mod(dependant))))
+        for dependent in cog.dependents:
+            mods.append(list(reversed(await self.unload_mod(dependent))))
         self.bot.unload_extension(f"mod.{name}")
         mods.append(name)
         return list(reversed(mods))
