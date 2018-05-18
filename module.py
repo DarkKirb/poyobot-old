@@ -17,14 +17,27 @@ reload, list, activate, deactivate, info)")
 
     async def load_mod(self, name):
         self.bot.load_extension(f"mod.{name}")
+        cog = self.bot.extensions[f"mod.{name}"].cog
+        for dependency in cog.dependencies:
+            if f"mod.{dependency}" not in self.bot.extensions:
+                await self.load_mod(self, dependency)
+            dep_cog = self.bot.extensions[f"mod.{dependency}"].cog
+            dep_cog.dependents.append(name)
 
     async def unload_mod(self, name):
         await self.bot.extensions[f"mod.{name}"].cog.on_unload()
+        cog = self.bot.extensions[f"mod.{name}"].cog
+        mods = []
+        for dependant in cog.dependants:
+            mods.append(list(reversed(await self.unload_mod(dependant))))
         self.bot.unload_extension(f"mod.{name}")
+        mods.append(name)
+        return list(reversed(mods))
 
     async def reload_mod(self, name):
-        await self.unload_mod(name)
-        await self.load_mod(name)
+        unloaded_mods = await self.unload_mod(name)
+        for mod in unloaded_mods:
+            await self.load_mod(mod)
 
     @module.command()
     @commands.is_owner()

@@ -53,6 +53,7 @@ def group(*args, **kwargs):
 
 class Cog():
     auto_enable = True
+    dependencies = []
 
     def __init__(self, bot):
         self.bot = bot
@@ -60,6 +61,7 @@ class Cog():
         self.global_enable = self.auto_enable
         self.overrides = {}
         self.no_overrides = []
+        self.dependents = []
         bot.add_cog(self)
         asyncio.ensure_future(self.init())
 
