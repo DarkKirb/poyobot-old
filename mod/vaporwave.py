@@ -5,9 +5,9 @@ from discord.ext import commands
 import asyncio
 from PIL import Image
 import opuslib
-import aiohttp
 import io
 import threading
+from . import imageloader
 
 
 __author__ = "Dark Kirb"
@@ -18,31 +18,26 @@ __version__ = "1.0"
 
 
 class Vaporwave(Cog):
-    @command()
-    async def mp3ify(self, ctx, fname: str = None):
-        if fname is None:
-            if len(ctx.message.attachments) == 0:
-                await ctx.send("You have to include an image")
-                return
-            x = ctx.message.attachments[0]["url"]
-        else:
-            x = fname
-        asyncio.ensure_future(self.mp3ify_task(ctx, x))
+    dependencies = ["imageloader"]
 
-    async def mp3ify_task(self, ctx, fname):
+    @command()
+    async def mp3ify(self, ctx):
+        im = await imageloader.cog.get_latest_image(ctx.message.channel)
+        if im is None:
+            await ctx.send("You have to include an image as no recent image \
+was found")
+            return
+
+        asyncio.ensure_future(self.mp3ify_task(ctx, im))
+
+    async def mp3ify_task(self, ctx, im):
         loop = asyncio.get_event_loop()
         event = asyncio.Event()
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(fname) as response:
-                data = io.BytesIO(await response.read())
 
         f = None
 
         def worker():  # worker thread
-            nonlocal loop, data, event, f
-            data.seek(0)
-            im = Image.open(data)
+            nonlocal loop, im, event, f
             pcm = im.tobytes()
             if len(pcm) % 2:
                 pcm = b'\0' + pcm
