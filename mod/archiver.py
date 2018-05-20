@@ -36,6 +36,7 @@ class Archiver(Cog):
                     reverse=True):
                 if last_day is None or last_day != message.created_at.date():
                     if f is not None:
+                        await f.flush()
                         await f.close()
                     last_day = message.created_at.date()
                     fname = os.path.join(tempdirname,
@@ -82,6 +83,7 @@ class Archiver(Cog):
                     await msg.edit(content=f"Archived {number} messages…\n")
 
             if f is not None:
+                await f.flush()
                 await f.close()
             await msg.edit(content="Archived all messages. Packing…\n")
             tar_count = 0
