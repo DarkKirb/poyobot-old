@@ -17,6 +17,9 @@ class Say(Cog):
         if "@everyone" in msg:
             await ctx.send("No")
             return
+        if "@here" in msg:
+            await ctx.send("No")
+            return
         await ctx.send(msg)
 
 
