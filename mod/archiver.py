@@ -65,7 +65,7 @@ class Archiver(Cog):
                         await f.write(
                             f"{padding} Attachment " +
                             f"{attachment.filename} {attachment.url} ")
-                        if fsize < 8*1024*1024 - 4096:
+                        if fsize < 7*1024*1024:
                             fname = os.path.join("imgs", f"{filehash}.{ext}")
                             async with tar.open(fname, "wb") as f3:
                                 await f3.write(f2.read())
