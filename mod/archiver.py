@@ -2,13 +2,11 @@
 multiple tar.xz files"""
 from utils import Cog, is_mod, command
 from discord.ext import commands
-import discord
-import tempfile
-import aiofiles
 import os
 import io
 import hashlib
-import tarfile
+import datetime
+from .tar import TARInstance
 
 
 __author__ = "Dark Kirb"
@@ -18,6 +16,8 @@ __version__ = "1.0"
 
 
 class Archiver(Cog):
+    dependencies = ["tar"]
+
     @command()
     async def archiver(self, ctx):
         """Archives the current channel (but doesn't delete it)"""
@@ -26,9 +26,8 @@ class Archiver(Cog):
             await ctx.send("You need to be moderator to archive a channel!")
         msg = await ctx.send("Archiving the channel. This might take a while")
         number = 0
-        with tempfile.TemporaryDirectory() as tempdirname:
-            archived_files = []
-            os.makedirs(os.path.join(tempdirname, "imgs"), exist_ok=True)
+        async with TARInstance(ctx, ctx.message.created_at.isoformat()) as tar:
+            tar.mkdir("imgs")
             f = None
             last_day = None
 
@@ -39,10 +38,8 @@ class Archiver(Cog):
                         await f.flush()
                         await f.close()
                     last_day = message.created_at.date()
-                    fname = os.path.join(tempdirname,
-                                         last_day.isoformat() + ".log")
-                    f = await aiofiles.open(fname, "w")
-                    archived_files.append(fname)
+                    fname = os.path.join(last_day.isoformat() + ".log")
+                    f = await tar[fname]
                 initial_str = (f"[{message.created_at.isoformat()}] " +
                                f"<{message.author.name}" +
                                f"#{message.author.discriminator}>")
@@ -64,12 +61,8 @@ class Archiver(Cog):
                         f"{padding} Attachment " +
                         f"{attachment.filename} {attachment.url} ")
                     if fsize < 8*1024*1024 - 4096:
-                        fname = os.path.join(tempdirname,
-                                             "imgs",
-                                             f"{filehash}.{ext}"
-                                             )
-                        archived_files.append(fname)
-                        async with aiofiles.open(fname, mode="wb") as f3:
+                        fname = os.path.join("imgs", f"{filehash}.{ext}")
+                        async with tar.open(fname, "wb") as f3:
                             await f3.write(f2.read())
                         await f.write(f"(saved as {fname})\n")
                     else:
@@ -82,41 +75,23 @@ class Archiver(Cog):
                 if not number % 250:
                     await msg.edit(content=f"Archived {number} messages…\n")
 
-            async for message in ctx.message.channel.history(
-                    limit=None,
-                    reverse=True):
-                await archive_message(message)
-            async for message in ctx.message.channel.history(
-                    after=message.created_at,
-                    limit=None,
-                    reverse=True):
-                await archive_message(message)
+            found = True
+            message_ts = datetime.datetime.fromtimestamp(0)
+            while found:
+                found = False
+                async for message in ctx.message.channel.history(
+                        limit=None,
+                        reverse=True,
+                        after=message_ts):
+                    await archive_message(message)
+                    found = True
+                    message_ts = message.created_at
             if f is not None:
                 await f.flush()
                 await f.close()
             await msg.edit(content="Archived all messages. Packing…\n")
-            tar_count = 0
-            tar_name_prefix = f"{ctx.message.created_at.isoformat()}-"
-            tar_name_prefix = os.path.join(tempdirname, tar_name_prefix)
-            tar_name_suffix = ".tar"
-            tfn = f"{tar_name_prefix}{tar_count}{tar_name_suffix}"
-            tf = tarfile.open(tfn, "w")
-            size = 2 * 20 * 512
-            for fname in archived_files:
-                size += os.path.getsize(fname)
-                size += 512 - (size % 512)
-                if size > 8*1024*1024:  # file full.
-                    tf.close()
-                    tar_count += 1
-                    await ctx.send(file=discord.File(tfn))
-                    tfn = f"{tar_name_prefix}{tar_count}{tar_name_suffix}"
-                    tf = tarfile.open(tfn, "w")
-                    size = 2 * 20 * 512
-                    size += os.path.getsize(fname)
-                    size += 512 - (size % 512)
-                tf.add(fname)
-            tf.close()
-            await ctx.send("done", file=discord.File(tfn))
+        await msg.delete()
+        await ctx.send("Done.")
 
 
 def setup(bot):
