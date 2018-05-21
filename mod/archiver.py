@@ -32,7 +32,7 @@ class Archiver(Cog):
             last_day = None
 
             async def archive_message(message):
-                nonlocal archived_files, f, last_day, number
+                nonlocal f, last_day, number
                 if last_day is None or last_day != message.created_at.date():
                     if f is not None:
                         await f.flush()
