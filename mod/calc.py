@@ -588,7 +588,7 @@ class JumpNeIns(object):
         return "jmpne {}".format(self.dest)
 
 
-class Say(Cog):
+class Calc(Cog):
     async def compile_code(self, code):
         global functions
         functions = ofunctions.copy()
@@ -599,6 +599,7 @@ class Say(Cog):
 
     @command()
     async def compile(self, ctx, *, code: str):
+        """This compiles code into bytecode"""
         await self.compile_code(code)
         paginator = commands.Paginator()
         for x in output[functions["INIT"]:]:
@@ -608,6 +609,33 @@ class Say(Cog):
 
     @command()
     async def eval(self, ctx, *, code: str):
+        """This is a calculator command. It supports the following:
+
+```
+- correct order of operation
+- addition, subtraction, multiplication, division
+- complex numbers (5 + i())
+- the constants pi() and e()
+- the following functions:
+    - ceil(number): rounds towards infinity
+    - mod(divisor, divident): returns the remainder of an integer devision
+    - log(num, base): returns ln(num)/ln(base)
+    - pow(base, exponent): returns base^exponent
+    - abs(number): absolute value
+    - sin(x), cos(x), tan(x)
+    - asin(x), acos(x), atan(x)
+    - sinh(x), cosh(x), tanh(x)
+    - asinh(x), acosh(x), atanh(x)
+    - copysign(a, b) - returns a with the same sign as b
+    - factorial(a)
+    - gcd(a, b) - greatest common divisor
+    - square(x) = pow(x, 2)
+    - sqrt(x) = pow(x, 0.5)
+    - ln(x) = log(x, e())
+    - lg(x) = log(x, 10)
+    - log2(x) = log(x, 2)
+    - hypot(x, y) = abs(x + y * i())
+```"""
         await self.compile_code(code)
         global stack, current_vars, frames, callstack, pc
         stack = []
@@ -630,4 +658,4 @@ class Say(Cog):
 
 def setup(bot):
     global cog
-    cog = Say(bot)
+    cog = Calc(bot)
