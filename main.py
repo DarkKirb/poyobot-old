@@ -12,7 +12,7 @@ import module
 with open("config.json") as f:
     config = json.load(f)
 
-bot = commands.AutoShardedBot(command_prefix="!")
+bot = commands.AutoShardedBot(command_prefix=commands.when_mentioned_or("!"))
 
 
 module.cog = module.ModuleCog(bot)
@@ -28,7 +28,8 @@ async def on_ready():
 async def on_command_error(ctx, ex):
     if isinstance(ex, commands.CommandNotFound):
         try:
-            await ctx.send("Command not found")
+            if bot.user in ctx.message.mentions:
+                await ctx.send("Command not found")
         except:
             pass
         return
