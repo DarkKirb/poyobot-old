@@ -14,6 +14,9 @@ class Say(Cog):
     @command()
     async def say(self, ctx, *, msg: str):
         """Output the arguments as a message"""
+        if "@everyone" in msg:
+            await ctx.send("No")
+            return
         await ctx.send(msg)
 
 
