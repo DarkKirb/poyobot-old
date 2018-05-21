@@ -38,7 +38,7 @@ class TARInstance:
         for fname in self.files:
             size += os.path.getsize(fname)
             size += 512 - (size % 512)
-            if size > 8 * 1024 * 1024:
+            if size > 7 * 1024 * 1024:
                 tf.close()
                 tar_count += 1
                 await self.dest.send(file=discord.File(tfn))
