@@ -25,9 +25,13 @@ class Archiver(Cog):
         """Archives the current channel (but doesn't delete it)"""
         if channel is None:
             channel = ctx.message.channel
+        if channel.guild.id != ctx.message.guild.id:
+            await ctx.send("You cannot archive a channel from another guild.")
+            return
         if not await is_mod(ctx.message.guild, ctx.message.author,
                             channel):
             await ctx.send("You need to be moderator to archive a channel!")
+            return
         msg = await ctx.send("Archiving the channel. This might take a while")
         number = 0
         async with TARInstance(ctx, ctx.message.created_at.isoformat()) as tar:
