@@ -31,9 +31,9 @@ class Archiver(Cog):
             os.makedirs(os.path.join(tempdirname, "imgs"), exist_ok=True)
             f = None
             last_day = None
-            async for message in ctx.message.channel.history(
-                    limit=None,
-                    reverse=True):
+
+            async def archive_message(message):
+                nonlocal archived_files, f, last_day, number
                 if last_day is None or last_day != message.created_at.date():
                     if f is not None:
                         await f.flush()
@@ -82,6 +82,15 @@ class Archiver(Cog):
                 if not number % 250:
                     await msg.edit(content=f"Archived {number} messages…\n")
 
+            async for message in ctx.message.channel.history(
+                    limit=None,
+                    reverse=True):
+                await archive_message(message)
+            async for message in ctx.message.channel.history(
+                    after=message.created_at,
+                    limit=None,
+                    reverse=True):
+                await archive_message(message)
             if f is not None:
                 await f.flush()
                 await f.close()
