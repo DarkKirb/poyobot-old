@@ -51,6 +51,8 @@ class ImageLoader(Cog):
         for embed in msg.embeds:
             if embed.image == discord.Embed.Empty:
                 continue
+            if embed.image.url == discord.Embed.Empty:
+                continue
             im = await self.fetch_image(embed.image.url)
             if im is not None:
                 return im
@@ -59,7 +61,7 @@ class ImageLoader(Cog):
         for word in ex:
             if word.startswith("http"):
                 # try loading it
-                im = await self.fetch_image(attachment.url)
+                im = await self.fetch_image(word)
                 if im is not None:
                     return im
 
