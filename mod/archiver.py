@@ -8,6 +8,7 @@ import hashlib
 import datetime
 import discord
 from .tar import TARInstance
+from . import queue
 
 
 __author__ = "Dark Kirb"
@@ -17,9 +18,10 @@ __version__ = "1.0"
 
 
 class Archiver(Cog):
-    dependencies = ["tar"]
+    dependencies = ["tar", "queue"]
 
     @command()
+    @queue.queue_cmd
     async def archiver(self, ctx, channel: discord.TextChannel = None,
                        include_images: bool = True):
         """Archives the current channel (but doesn't delete it)"""

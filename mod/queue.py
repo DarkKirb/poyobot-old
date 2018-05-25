@@ -4,6 +4,7 @@ from utils import Cog, command
 from discord.ext import commands
 import collections
 import asyncio
+import functools
 
 
 __author__ = "Dark Kirb"
@@ -15,13 +16,12 @@ __version__ = "1.0"
 def queue_cmd(f):
     queue = collections.deque()
 
-    @wraps(f)
     async def queue_task():
         while len(queue) != 0:
             try:
                 try:
-                    ctx, args, kwargs = queue[0]
-                    await f(ctx, *args, **kwargs)
+                    self, ctx, args, kwargs = queue[0]
+                    await f(self, ctx, *args, **kwargs)
                 except commands.CommandError as e:
                     raise
                 except Exception as e:
@@ -30,9 +30,9 @@ def queue_cmd(f):
                 ctx.command.dispatch_error(ctx, e)
             queue.popleft()
 
-    @wraps(f)
-    async def queue_handler(ctx, *args, **kwargs):
-        queue.append((ctx, args, kwargs))
+    @functools.wraps(f)
+    async def queue_handler(self, ctx, *args, **kwargs):
+        queue.append((self, ctx, args, kwargs))
         if len(queue) > 1:
             await ctx.send(f"This command is currently being run elsewhere. \
 Execution will wait until the {len(queue)-1} people in front of you finish")
@@ -43,13 +43,10 @@ Execution will wait until the {len(queue)-1} people in front of you finish")
     return queue_handler
 
 
-class Say(Cog):
-    @command()
-    async def say(self, ctx, *, msg: str):
-        """Output the arguments as a message"""
-        await ctx.send(msg)
+class Queue(Cog):
+    pass
 
 
 def setup(bot):
     global cog
-    cog = Say(bot)
+    cog = Queue(bot)
