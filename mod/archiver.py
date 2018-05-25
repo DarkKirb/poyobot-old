@@ -23,10 +23,17 @@ class Archiver(Cog):
     @command()
     @queue.queue_cmd
     async def archiver(self, ctx, channel: discord.TextChannel = None,
-                       include_images: bool = True):
+                       include_images: bool = True, name: str=None):
         """Archives the current channel (but doesn't delete it)"""
         if channel is None:
             channel = ctx.message.channel
+        if name is None:
+            name = ""
+        else:
+            name += "-"
+        name += channel.name + "-" + ctx.message.created_at.isoformat()
+        if not include_images:
+            name += "-text-only"
         if channel.guild.id != ctx.message.guild.id:
             await ctx.send("You cannot archive a channel from another guild.")
             return
@@ -36,7 +43,7 @@ class Archiver(Cog):
             return
         msg = await ctx.send("Archiving the channel. This might take a while")
         number = 0
-        async with TARInstance(ctx, ctx.message.created_at.isoformat()) as tar:
+        async with TARInstance(ctx, name) as tar:
             tar.mkdir("imgs")
             f = None
             last_day = None
