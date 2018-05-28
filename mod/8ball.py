@@ -53,9 +53,9 @@ class EightBall(Cog):
             r'(Now)\W': datetime.datetime.utcnow().isoformat(),
             r'^(now|rn)\W': datetime.datetime.utcnow().isoformat(),
             r'\W(now|rn)\W': datetime.datetime.utcnow().isoformat(),
-            r'(Today)\W': datetime.time.today().isoformat(),
-            r'^(today)\W': datetime.time.today().isoformat(),
-            r'\W(today)\W': datetime.time.today().isoformat(),
+            r'(Today)\W': datetime.date.today().isoformat(),
+            r'^(today)\W': datetime.date.today().isoformat(),
+            r'\W(today)\W': datetime.date.today().isoformat(),
         }
         for regex, repl in regexes.items():
             content = re.sub(regex, repl, content)
