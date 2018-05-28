@@ -4,6 +4,7 @@ from discord.ext import commands
 import hashlib
 import random
 import datetime
+import re
 
 
 __author__ = "Dark Kirb"
@@ -45,18 +46,20 @@ class EightBall(Cog):
             return
         content = msg
         # Replace message contents to seem more random
-        content = content.replace(" I ", str(ctx.message.author.id))
-        content = content.replace("Me ", str(ctx.message.author.id))
-        content = content.replace(" me ", str(ctx.message.author.id))
-        content = content.replace(" now ",
-                                  datetime.datetime.utcnow().isoformat())
-        content = content.replace("Now ",
-                                  datetime.datetime.utcnow().isoformat())
-        content = content.replace(" rn ",
-                                  datetime.datetime.utcnow().isoformat())
-        content = content.replace(" today ", datetime.date.today().isoformat())
-        content = content.replace("Today ", datetime.date.today().isoformat())
-
+        regexes = {
+            r'(I|Me)\W': str(ctx.message.author.id),
+            r'^(i|me)\W': str(ctx.message.author.id),
+            r'\W(i|me)\W': str(ctx.message.author.id),
+            r'(Now)\W': datetime.datetime.utcnow().isoformat(),
+            r'^(now|rn)\W': datetime.datetime.utcnow().isoformat(),
+            r'\W(now|rn)\W': datetime.datetime.utcnow().isoformat(),
+            r'(Today)\W': datetime.time.today().isoformat(),
+            r'^(today)\W': datetime.time.today().isoformat(),
+            r'\W(today)\W': datetime.time.today().isoformat(),
+        }
+        for regex, repl in regexes.items():
+            content = re.sub(regex, repl, content)
+        print(f"Mangled input from {msg} to {content}.")
         random.seed(hashlib.sha512(content.encode()).digest())
         await ctx.send(random.choice(messages))
 
