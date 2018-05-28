@@ -43,7 +43,7 @@ class EightBall(Cog):
         if random.randrange(0, 23) < 5:
             await ctx.send(random.choice(neutral_messages))
             return
-        content = msg.content
+        content = msg
         # Replace message contents to seem more random
         content = content.replace(" I ", str(ctx.message.author.id))
         content = content.replace("Me ", str(ctx.message.author.id))
