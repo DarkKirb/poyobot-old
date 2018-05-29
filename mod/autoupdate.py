@@ -104,7 +104,7 @@ class Autoupdate(Cog):
                 # we can't reload the modules
                 await self.bot.logout()
                 sys.exit(0)
-            for mod in self.bot.extensions:
+            for mod in self.bot.extensions.values():
                 cog = mod.cog
                 if fname in cog.watch_files:
                     await module.cog.reload_mod(mod.__name__)
