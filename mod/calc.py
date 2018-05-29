@@ -655,6 +655,9 @@ class JumpNeIns(object):
 def makeop(x):
     if isinstance(x, MathOp):
         return x
+
+    if x == math.e:
+        return EOp()
     return ConstOp(x)
 
 
@@ -894,7 +897,7 @@ class MulOp(MathOp):
         if not self.lhs.function_of_x():
             return self.lhs * self.rhs.derive()
         if not self.rhs.function_of_x():
-            return self.rhs + self.lhs.derive()
+            return self.rhs * self.lhs.derive()
         return self.lhs.derive() * self.rhs + self.lhs * self.rhs.derive()
 
     def function_of_x(self):
@@ -1078,7 +1081,7 @@ class SplitFunOp(MathOp):
     def derive(self):
         terms = []
         for term, comparator, comparator_str in self.terms:
-            terms.append((term.derive), comparator, comparator_str)
+            terms.append((term.derive(), comparator, comparator_str))
         return SplitFunOp(*terms)
 
     def function_of_x(self):
