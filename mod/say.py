@@ -8,6 +8,7 @@ __author__ = "Dark Kirb"
 __license__ = "Public domain"
 __website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/say.py"
 __version__ = "1.0"
+dependencies = []
 
 
 class Say(Cog):

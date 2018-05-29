@@ -10,6 +10,7 @@ __author__ = "Dark Kirb"
 __license__ = "BSD-2clause"
 __website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/calc.py"
 __version__ = "1.0"
+dependencies = []
 
 
 with open("data/commonfunc.cl") as f:

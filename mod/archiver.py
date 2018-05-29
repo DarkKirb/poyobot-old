@@ -15,11 +15,10 @@ __author__ = "Dark Kirb"
 __license__ = "BSD-2clause"
 __website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/archiver.py"
 __version__ = "1.0"
+dependencies = ["tar", "queue"]
 
 
 class Archiver(Cog):
-    dependencies = ["tar", "queue"]
-
     @command()
     @queue.queue_cmd
     async def archiver(self, ctx, channel: discord.TextChannel = None,

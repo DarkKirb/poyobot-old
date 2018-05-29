@@ -1,6 +1,7 @@
 from utils import Cog, is_admin, is_mod, NotAdminError, NotModError, group
 from discord.ext import commands
 import database
+import importlib
 
 
 class ModuleCog(Cog):
@@ -15,29 +16,56 @@ Depending on your permissions, some of these commands might be unavailable."""
         await ctx.send("You need to specify a subcommand (load, unload, \
 reload, list, activate, deactivate, info)")
 
+    def get_module(self, name):
+        return self.bot.extensions[f"mod.{name}"]
+
+    def get_cog(self, name):
+        return self.get_module(name).cog
+
+    async def get_load_order(self, name):
+        mod = importlib.import_module(f"mod.{name}")
+        mods = []
+        for modname in mod.dependencies:
+            async for dep in self.get_load_order(modname):
+                if dep not in mods:
+                    yield dep
+                    mods.append(dep)
+        yield name
+
+    async def get_unload_order(self, name):
+        mod = self.get_cog(name)
+        mods = []
+        for modname in mod.dependents.copy():
+            async for dep in self.get_unload_order(modname):
+                if dep not in mods:
+                    yield dep
+                    mods.append(dep)
+        yield name
+
     async def load_mod(self, name):
-        self.bot.load_extension(f"mod.{name}")
-        cog = self.bot.extensions[f"mod.{name}"].cog
-        for dependency in cog.dependencies:
-            if f"mod.{dependency}" not in self.bot.extensions:
-                await self.load_mod(dependency)
-            dep_cog = self.bot.extensions[f"mod.{dependency}"].cog
-            dep_cog.dependents.append(name)
+        async for mod in self.get_load_order(name):
+            self.bot.load_extension(f"mod.{mod}")
+            for dep in self.get_module(mod).dependencies:
+                self.get_cog(dep).dependents.append(mod)
 
     async def unload_mod(self, name):
-        await self.bot.extensions[f"mod.{name}"].cog.on_unload()
-        cog = self.bot.extensions[f"mod.{name}"].cog
-        mods = []
-        for dependent in cog.dependents:
-            mods += list(reversed(await self.unload_mod(dependent)))
-        self.bot.unload_extension(f"mod.{name}")
-        mods.append(name)
-        return list(reversed(mods))
+        async for mod in self.get_unload_order(name):
+            await self.get_cog(mod).on_unload()
+            for dep in self.get_module(mod).dependencies:
+                dep_deps = self.get_cog(dep).dependents
+                del dep_deps[dep_deps.index(mod)]
+            self.bot.unload_extension(f"mod.{mod}")
 
     async def reload_mod(self, name):
-        unloaded_mods = await self.unload_mod(name)
-        for mod in unloaded_mods:
+        data = {}
+        mods = []
+        async for mod in self.get_unload_order(name):
+            data[mod] = await self.get_cog(mod).on_reload_unload()
+            await self.unload_mod(mod)
+            mods.append(mod)
+        for mod in reversed(mods):
             await self.load_mod(mod)
+            await self.get_cog(mod).on_reload_load(data[mod])
 
     @module.command()
     @commands.is_owner()
@@ -91,7 +119,6 @@ reload, list, activate, deactivate, info)")
         else:
             await database.db.enable.insert_one(document)
         module.overrides[who.id] = enabled
-
 
     async def set_perm(self, ctx, name: str, global_: bool, user: bool,
                        server: bool, channel: bool, enable: bool):

@@ -15,11 +15,10 @@ __license__ = "BSD-2clause"
 __website__ = \
     "https://github.com/DarkKirb/poyobot/blob/master/mod/vaporwave.py"
 __version__ = "1.0"
+dependencies = ["imageloader"]
 
 
 class Vaporwave(Cog):
-    dependencies = ["imageloader"]
-
     @command()
     async def mp3ify(self, ctx):
         im = await imageloader.cog.get_latest_image(ctx.message.channel)

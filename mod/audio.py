@@ -15,6 +15,7 @@ __website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/audio.py, \
 based on https://github.com/Rapptz/discord.py/blob/async/examples/playlist.py \
 and https://github.com/Rapptz/discord.py/blob/async/discord/voice_client.py"
 __version__ = "1.0"
+dependencies = []
 
 
 if not discord.opus.is_loaded():

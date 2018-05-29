@@ -15,6 +15,7 @@ __license__ = "BSD-2clause"
 __website__ = \
     "https://github.com/DarkKirb/poyobot/blob/master/mod/autoupdate.py"
 __version__ = "1.0"
+dependencies = []
 
 
 def launch_process(*args):

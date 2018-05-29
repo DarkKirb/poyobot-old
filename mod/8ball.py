@@ -11,6 +11,7 @@ __author__ = "Dark Kirb"
 __license__ = "BSD-2clause"
 __website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/8ball.py"
 __version__ = "1.0"
+dependencies = []
 
 
 class EightBall(Cog):

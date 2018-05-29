@@ -53,7 +53,6 @@ def group(*args, **kwargs):
 
 class Cog():
     auto_enable = True
-    dependencies = []
     watch_files = []
 
     def __init__(self, bot):
@@ -126,6 +125,12 @@ class Cog():
         pass
 
     async def on_disable(self, where):
+        pass
+
+    async def on_reload_unload(self):
+        return None
+
+    async def on_reload_load(self, data):
         pass
 
 

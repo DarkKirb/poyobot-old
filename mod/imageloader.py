@@ -12,6 +12,7 @@ __license__ = "BSD-2clause"
 __website__ = \
     "https://github.com/DarkKirb/poyobot/blob/master/mod/imageloader.py"
 __version__ = "1.0"
+dependencies = []
 
 
 class ImageLoader(Cog):

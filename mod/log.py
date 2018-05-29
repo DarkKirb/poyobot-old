@@ -13,6 +13,7 @@ __author__ = "Dark Kirb"
 __license__ = "BSD-2clause"
 __website__ = "https://github.com/DarkKirb/poyobot/blob/master/mod/log.py"
 __version__ = "0.1"
+dependencies = []
 
 
 table = database.db.log_table
