@@ -54,6 +54,7 @@ def group(*args, **kwargs):
 class Cog():
     auto_enable = True
     dependencies = []
+    watch_files = []
 
     def __init__(self, bot):
         self.bot = bot
