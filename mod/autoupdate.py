@@ -52,7 +52,7 @@ class Autoupdate(Cog):
 
     async def do_update(self):
         await self._update()
-        asyncio.get_event_loop().call_later(300, self.check_for_update)
+        asyncio.get_event_loop().call_later(900, self.check_for_update)
 
     async def _update(self):
         # 0) fetch latest commit
