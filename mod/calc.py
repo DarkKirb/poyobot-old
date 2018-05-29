@@ -589,6 +589,8 @@ class JumpNeIns(object):
 
 
 class Calc(Cog):
+    watch_files = ["data/commonfuncs.cl"]
+
     async def compile_code(self, code):
         global functions
         functions = ofunctions.copy()

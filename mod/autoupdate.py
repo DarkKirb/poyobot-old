@@ -103,6 +103,10 @@ class Autoupdate(Cog):
                 # we can't reload the modules
                 await self.bot.logout()
                 sys.exit(0)
+            for mod in self.bot.extensions:
+                cog = mod.cog
+                if fname in cog.watch_files:
+                    await module.cog.reload_mod(mod.__name__)
 
         # bot was updated
         await self.bot.change_presence(status=discord.Status.online,
