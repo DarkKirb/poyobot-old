@@ -38,7 +38,14 @@ async def log(stack):
     if isinstance(a, complex) or isinstance(b, complex):
         stack.append(cmath.log(a) / cmath.log(b))
     elif isinstance(a, MathOp) or isinstance(b, MathOp):
-        stack.append(LogOp(makeop(a), makeop(b)))
+        if makeop(a) == makeop(b):
+            stack.append(ConstOp(0))
+        elif isinstance(makeop(b), EOp):
+            stack.append(LogOp(makeop(a)))
+        else:
+            stack.append(LogOp(makeop(a)) / LogOp(makeop(b)))
+    else:
+        stack.append(cmath.log(a) / cmath.log(b))
 
 
 async def npow(stack):
