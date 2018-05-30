@@ -683,6 +683,21 @@ class MathOp:
     def __pow__(self, other):
         return PowOp(self, makeop(other))
 
+    def __radd__(self, other):
+        return AddOp(makeop(other), self)
+
+    def __rsub__(self, other):
+        return SubOp(makeop(other), self)
+
+    def __rmul__(self, other):
+        return MulOp(makeop(other), self)
+
+    def __rtruediv__(self, other):
+        return DivOp(makeop(other), self)
+
+    def __rpow__(self, other):
+        return PowOp(makeop(other), self)
+
     def __neg__(self):
         return NegOp(self)
 
