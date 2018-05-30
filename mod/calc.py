@@ -1218,6 +1218,183 @@ class ModOp(MathOp):
         return not (self == other)
 
 
+class Var:
+    def __init__(self, no):
+        self.no = no
+
+
+class Rule:
+    def __init__(self, lhs, rhs):
+        self.lhs = lhs
+        self.rhs = rhs
+
+    def matches(self, lhs, op):
+        if isinstance(lhs, Var):
+            return True
+        if isinstance(lhs, (int, float)) and isinstance(op, ConstOp):
+            if lhs == op.val:
+                return True
+        if type(op) is not type(lhs):
+            return False
+        if isinstance(op, (ConstOp, VarOp)):
+            return True
+        if hasattr(op, "term"):
+            return self.matches(lhs.term, op.term)
+        return self.matches(lhs.lhs, op.lhs) and self.matches(lhs.rhs, op.rhs)
+
+    def get_all_replacements(self, lhs, rhs):
+        if isinstance(lhs, Var):
+            return {lhs.no: rhs}
+        if isinstance(rhs, ConstOp) or isinstance(rhs, VarOp):
+            return {}
+        if hasattr(lhs, "term"):
+            return self.get_all_replacements(lhs.term, rhs.term)
+        adict = self.get_all_replacements(lhs.lhs, rhs.lhs)
+        bdict = self.get_all_replacements(lhs.rhs, rhs.rhs)
+        cdict = adict.copy()
+        for k, v in bdict.items():
+            if k in cdict and v != cdict[k]:
+                raise ValueError("Doesn't fit")
+            cdict[k] = v
+        return cdict
+
+    def do_all_replacements(self, rep, rhs):
+        if isinstance(rhs, Var):
+            return rep[rhs.no]
+        if isinstance(rhs, (VarOp, ConstOp)):
+            return rhs
+        if hasattr(rhs, "term"):
+            return type(rhs)(self.do_all_replacements(rep, rhs.term))
+        return type(rhs)(self.do_all_replacements(rep, rhs.lhs),
+                         self.do_all_replacements(rep, rhs.rhs))
+
+    def __call__(self, op):
+        try:
+            if not self.matches(self.lhs, op):
+                raise ValueError("No")
+            rep = self.get_all_replacements(self.lhs, op)
+        except ValueError:
+            if isinstance(op, ConstOp) or isinstance(op, VarOp):
+                return op
+            if hasattr(op, "term"):
+                return type(op)(self(op.term))
+            return type(op)(self(op.lhs), self(op.rhs))
+
+        new = self.do_all_replacements(rep, self.rhs)
+        # match children
+        if isinstance(new, (ConstOp, VarOp)):
+            return new
+        if hasattr(new, "term"):
+            return type(new)(self(new.term))
+        return type(new)(self(new.lhs), self(new.rhs))
+
+
+def reduce_const_ops(term):
+    if isinstance(term, (ConstOp, VarOp)):
+        return term
+    if hasattr(term, "term"):
+        op = reduce_const_ops(term.term)
+        if isinstance(op, ConstOp):
+            return ConstOp(type(term)(op)(0))
+        return type(term)(op)
+    lhs = reduce_const_ops(term.lhs)
+    rhs = reduce_const_ops(term.rhs)
+    if isinstance(lhs, ConstOp) and isinstance(rhs, ConstOp):
+        return ConstOp(type(term)(lhs, rhs)(0))
+    return type(term)(lhs, rhs)
+
+
+def apply_rules(e):
+    rules = [
+        Rule(AddOp(0, Var(1)),
+             Var(1)),
+        Rule(AddOp(Var(1), 0),
+             Var(1)),
+
+        Rule(SubOp(0, Var(1)),
+             NegOp(Var(1))),
+
+        Rule(MulOp(1, Var(1)),
+             Var(1)),
+        Rule(MulOp(Var(1), 1),
+             Var(1)),
+        Rule(MulOp(0, Var(1)),
+             ConstOp(0)),
+        Rule(MulOp(Var(1), 0),
+             ConstOp(0)),
+
+        Rule(SubOp(Var(1), Var(1)),
+             ConstOp(0)),
+        Rule(DivOp(Var(1), Var(1)),
+             ConstOp(1)),
+
+        Rule(MulOp(PowOp(Var(1), Var(2)), Var(1)),
+             PowOp(Var(1), AddOp(Var(2), ConstOp(1)))),
+        Rule(MulOp(PowOp(Var(1), Var(2)), PowOp(Var(1), Var(3))),
+             PowOp(Var(1), AddOp(Var(2), Var(3)))),
+        Rule(PowOp(Var(1), 0),
+             ConstOp(1)),
+        Rule(PowOp(Var(1), 1),
+             Var(1)),
+        Rule(PowOp(Var(1), -1),
+             DivOp(ConstOp(1), Var(1))),
+        Rule(PowOp(PowOp(Var(1), Var(2)), Var(3)),
+             PowOp(Var(1), MulOp(Var(2), Var(3)))),
+        Rule(PowOp(ConstOp(0), Var(1)),
+             ConstOp(0)),
+        Rule(PowOp(Var(1), 0),
+             ConstOp(1)),
+        Rule(PowOp(ConstOp(1), Var(1)),
+             ConstOp(1)),
+        Rule(PowOp(Var(1), 1),
+             Var(1)),
+        Rule(MulOp(Var(1), Var(1)),
+             PowOp(Var(1), ConstOp(2))),
+
+        Rule(AddOp(MulOp(Var(1), Var(2)), MulOp(Var(1), Var(3))),
+             MulOp(Var(1), AddOp(Var(2), Var(3)))),
+        Rule(AddOp(Var(1), MulOp(Var(1), Var(2))),
+             MulOp(Var(1), AddOp(ConstOp(1), Var(2)))),
+
+        Rule(MulOp(Var(1), MulOp(Var(2), Var(3))),
+             MulOp(MulOp(Var(1), Var(2)), Var(3))),
+        Rule(AddOp(Var(1), AddOp(Var(2), Var(3))),
+             AddOp(AddOp(Var(1), Var(2)), Var(3))),
+        Rule(AddOp(SubOp(Var(1), Var(2)), Var(2)),
+             Var(1)),
+
+        Rule(DivOp(DivOp(Var(1), Var(2)), Var(3)),
+             DivOp(Var(1), MulOp(Var(2), Var(3)))),
+
+        Rule(PowOp(AbsOp(Var(1)), ConstOp(2)),
+             PowOp(Var(1), ConstOp(2))),
+
+        Rule(DivOp(PowOp(Var(1), Var(2)), PowOp(Var(1), Var(3))),
+             PowOp(Var(1), SubOp(Var(2), Var(3)))),
+        Rule(DivOp(Var(1), PowOp(Var(1), Var(2))),
+             PowOp(Var(1), SubOp(ConstOp(1), Var(2)))),
+        Rule(DivOp(PowOp(Var(1), Var(2)), Var(1)),
+             PowOp(Var(1), SubOp(Var(2), ConstOp(1)))),
+    ]
+    r = Rule(None, None)
+    for i in range(50):
+        for r in rules:
+            e = r(e)
+        # between rounds apply two special rules
+        if i % 2:
+            e = Rule(MulOp(MulOp(Var(1), Var(2)), Var(3)),
+                     MulOp(Var(1), MulOp(Var(2), Var(3))))(e)
+            e = Rule(AddOp(AddOp(Var(1), Var(2)), Var(3)),
+                     AddOp(Var(1), AddOp(Var(2), Var(3))))(e)
+        else:
+            e = Rule(MulOp(Var(1), MulOp(Var(2), Var(3))),
+                     MulOp(MulOp(Var(1), Var(2)), Var(3)))(e)
+            e = Rule(AddOp(Var(1), AddOp(Var(2), Var(3))),
+                     AddOp(AddOp(Var(1), Var(2)), Var(3)))(e)
+        e = reduce_const_ops(e)
+    return e
+
+
 class Calc(Cog):
     watch_files = ["data/commonfuncs.cl"]
 
@@ -1285,7 +1462,10 @@ class Calc(Cog):
             await output[pc](stack)
             pc += 1
             icount += 1
-        await ctx.send(stack.pop())
+        val = stack.pop()
+        if isinstance(val, MathOp):  # simplify
+            val = apply_rules(val)
+        await ctx.send(val)
 
 
 def setup(bot):
