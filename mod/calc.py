@@ -86,7 +86,7 @@ async def napply(stack):
 
 
 async def derive(stack):
-    stack.append(stack.pop().derive())
+    stack.append(apply_rules(stack.pop()).derive())
 
 
 async def xop(stack):
